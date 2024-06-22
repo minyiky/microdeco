@@ -1,32 +1,23 @@
-import unittest
+import pytest
 
+from microdeco.test_utils import approx
 from microdeco.equations import schreiner, buhlmann
 
-class TestSchreinerFunction(unittest.TestCase):
+# Test cases for schreiner function
+@pytest.mark.parametrize("p_alv, p_t, k, t, R, expected", [
+    (0.637364, 0.74065446, 0.138629, 1.5, 1.36, 0.919397),  # descent
+    (2.677364, 0.919397, 0.138629, 20, 0, 2.567490),        # constant_depth
+    (2.677364, 2.567490, 0.138629, 2, -0.68, 2.421830)      # ascent
+])
+def test_schreiner_function(p_alv: float, p_t: float, k: float, t: float, R: float, expected: float):
+    assert approx(schreiner(p_alv=p_alv, p_t=p_t, k=k, t=t, R=R), expected, rel=1e-5)
 
-    def test_descent(self):
-        self.assertAlmostEqual(schreiner(p_alv=0.637364, p_t=0.74065446, k=0.138629, t=1.5, R=1.36), 0.919397, 5)
-
-    def test_constant_depth(self):
-        self.assertAlmostEqual(schreiner(p_alv=2.677364, p_t=0.919397, k=0.138629, t=20, R=0), 2.567490, 5)
-
-    def test_ascent(self):
-        self.assertAlmostEqual(schreiner(p_alv=2.677364, p_t=2.567490, k=0.138629, t=2, R=-0.68), 2.421840, 5)
-
-class TestBuhlmannFunction(unittest.TestCase):
-
-    def test_surface(self):
-        self.assertAlmostEqual(buhlmann(0.3, 0.74065446, 0, 1.1696, 0, 0.5578, 0), 0.314886, 5)
-
-    def test_descent(self):
-        self.assertAlmostEqual(buhlmann(0.3, 0.919397, 0, 1.1696, 0, 0.5578, 0), 0.4592862, 5)
-
-    def test_constant_depth(self):
-        self.assertAlmostEqual(buhlmann(0.3, 2.567490, 0, 1.1696, 0, 0.5578, 0), 1.7907266, 5)
-
-    def test_ascent(self):
-        self.assertAlmostEqual(buhlmann(0.3, 2.421840, 0, 1.1696, 0, 0.5578, 0), 1.6730607, 5)
-
-
-if __name__ == '__main__':
-    unittest.main()
+# Test cases for buhlmann function
+@pytest.mark.parametrize("gf, p_n2, p_he, A_n2, A_he, B_n2, B_he, expected", [
+    (0.3, 0.74065446, 0, 1.1696, 0, 0.5578, 0, 0.314886),  # surface
+    (0.3, 0.919397, 0, 1.1696, 0, 0.5578, 0, 0.4592862),  # descent
+    (0.3, 2.567490, 0, 1.1696, 0, 0.5578, 0, 1.7907266),  # constant depth
+    (0.3, 2.421840, 0, 1.1696, 0, 0.5578, 0, 1.6730607)   # ascent
+])
+def test_buhlmann_function(gf: float, p_n2: float, p_he: float, A_n2: float, A_he: float, B_n2: float, B_he: float, expected: float):
+    assert approx(buhlmann(gf, p_n2, p_he, A_n2, A_he, B_n2, B_he), expected, rel=1e-5)
