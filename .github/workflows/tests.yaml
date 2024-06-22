@@ -21,8 +21,14 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Run tests
-        run: python -m unittest discover
+      - name: Install dependencies and coverage
+        run: |
+          pip install coverage
+
+      - name: Run tests with coverage
+        run: |
+          coverage run -m unittest discover
+          coverage report -m
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
