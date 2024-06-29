@@ -1,5 +1,5 @@
 """
-Utitilies to help with using the pytest framework
+Utilities to help with using the pytest framework
 """
 
 import pytest
@@ -10,7 +10,7 @@ def approx(result: float, *args, **kwargs) -> bool:  # type: ignore
     Compare the given result with the expected value
     using pytest's `approx` function.
 
-    Use to aviod tpye comparison errors.
+    Use to avoid type comparison errors.
 
     Args:
         result (float): The value to be compared.

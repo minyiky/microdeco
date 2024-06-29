@@ -1,5 +1,5 @@
 """
-Equations used to control gas loading simultaion in tissues.
+Equations used to control gas loading simulation in tissues.
 
 This file covers
     - The Schreiner equation
@@ -49,7 +49,7 @@ def buhlmann(
     """
     Calculates pressure ceiling of a tissue using the Buhlmann equation.
 
-    This uses gradient factors to proivde an additional safety margin.
+    This uses gradient factors to provide an additional safety margin.
 
     Args:
         gf (float): The gradient factor.
