@@ -5,10 +5,38 @@ Test cases for microdeco.equations
 import pytest
 
 from microdeco.test_utils import approx
-from microdeco.equations import schreiner, buhlmann
+from microdeco.equations import (
+    load_tissue,
+    load_tissue_constant,
+    buhlmann,
+)
 
 
-# Test cases for schreiner function
+# Test cases for load_tissue_constant function
+@pytest.mark.parametrize(
+    "p_alv, p_t, k, t, expected",
+    [
+        (2.677364, 0.919397, 0.138629, 20, 2.567490),
+    ],
+)
+def test_load_tissue_constant_function(
+    p_alv: float,
+    p_t: float,
+    k: float,
+    t: float,
+    expected: float,
+):
+    """
+    Test the behaviour of the load_tissue function using precomputed values.
+    """
+    assert approx(
+        load_tissue_constant(p_alv=p_alv, p_i=p_t, k=k, t=t),
+        expected,
+        rel=1e-5,
+    )
+
+
+# Test cases for load_tissue function
 @pytest.mark.parametrize(
     "p_alv, p_t, k, t, R, expected",
     [
@@ -17,7 +45,7 @@ from microdeco.equations import schreiner, buhlmann
         (2.677364, 2.567490, 0.138629, 2, -0.68, 2.421830),  # ascent
     ],
 )
-def test_schreiner_function(
+def test_load_tissue_function(
     p_alv: float,
     p_t: float,
     k: float,
@@ -26,10 +54,10 @@ def test_schreiner_function(
     expected: float,
 ):
     """
-    Test the behaviour of the schreiner function using precomputed values.
+    Test the behaviour of the load_tissue function using precomputed values.
     """
     assert approx(
-        schreiner(p_alv=p_alv, p_i=p_t, k=k, t=t, R=R),
+        load_tissue(p_alv=p_alv, p_i=p_t, k=k, t=t, R=R),
         expected,
         rel=1e-5,
     )

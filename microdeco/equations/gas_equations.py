@@ -9,7 +9,28 @@ This file covers
 import math
 
 
-def schreiner(
+def load_tissue_constant(k: float, p_alv: float, p_i: float, t: float) -> float:
+    """
+    Calculate changes in tissue pressure using the Haldane equation.
+
+    This function calculates the Haldane equation using the provided
+    parameters.
+
+    Parameters:
+        k (float): Gas decay constant (tissue specific).
+        p_alv (float): The absolute partial pressure of inspired gas.
+        p_i (float): The initial absolute partial pressure of the
+            gas in the tissue.
+        t (float): The time in minutes.
+
+    Returns:
+        float: The final pressure of the tissue.
+    """
+    exponent = math.exp(-(k * t))
+    return p_alv + (p_i - p_alv) * exponent
+
+
+def load_tissue(
     p_alv: float,
     p_i: float,
     k: float,
