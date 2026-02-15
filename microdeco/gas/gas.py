@@ -11,12 +11,13 @@ def _name_from_comp(p_o2: int, p_n2: int, p_he: int) -> str:
 
 
 class Gas:
+    __slots__ = ('p_o2', 'p_n2', 'p_he', 'name')
 
     def __init__(self, p_o2: int = 21, p_n2: int = 79, p_he: int = 0):
-        assert p_o2 + p_n2 + p_he == 100, "The sum of the gas percentages must be 100%"
-        assert (
-            p_o2 >= 0 and p_n2 >= 0 and p_he >= 0
-        ), "Gas percentages must be non-negative"
+        if p_o2 + p_n2 + p_he != 100:
+            raise ValueError("The sum of the gas percentages must be 100%")
+        if p_o2 < 0 or p_n2 < 0 or p_he < 0:
+            raise ValueError("Gas percentages must be non-negative")
 
         self.p_o2 = p_o2 / 100.0
         self.p_n2 = p_n2 / 100.0

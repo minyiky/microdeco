@@ -27,7 +27,7 @@ TRI21_35 = Gas(21, 44, 35)
         ([EAN32, TRI21_35, AIR]),
     ],
 )
-def test_sort_gasses(expected_order: list[Gas]):
+def test_sort_gasses(expected_order):
     """
     Test the behaviour of the sort_gasses function using precomputed values.
     """

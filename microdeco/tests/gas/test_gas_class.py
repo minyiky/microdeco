@@ -53,7 +53,7 @@ def test_gas_invalid_composition():
     """
     Test that the Gas class raises an assertion error for invalid compositions.
     """
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         Gas(p_o2=50, p_n2=30, p_he=30)  # Sum is 110%
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         Gas(p_o2=50, p_n2=60, p_he=-10)  # Negative percentage

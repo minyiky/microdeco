@@ -1,10 +1,7 @@
+from .. import const
 from .tissue import GasCoeffients, Tissue
 from ..gas import Gas
 from .gradient_factor import GradientFactors
-
-
-class ZH_GF:
-    pass
 
 
 class ZH_L16C_GF:  # source: ostc firmware code
@@ -13,7 +10,7 @@ class ZH_L16C_GF:  # source: ostc firmware code
     """
 
     @staticmethod
-    def setup_compartments() -> list[Tissue]:
+    def setup_compartments():
         return [
             Tissue(
                 nitrogen=GasCoeffients(A=1.2599, B=0.5050, HALF_LIFE=4.0),
@@ -96,7 +93,6 @@ class ZH_L16C_GF:  # source: ostc firmware code
             t (float): The time in minutes.
             gas (Gas): The breathing gas mixture.
         """
-        from .. import const
         abs_p = depth / 10 + 1
         p_n2 = gas.p_n2 * (abs_p - const.WATER_VAPOUR_PRESSURE)
         p_he = gas.p_he * (abs_p - const.WATER_VAPOUR_PRESSURE)
@@ -117,8 +113,6 @@ class ZH_L16C_GF:  # source: ostc firmware code
             t (float): The time in minutes to transition from start to end depth.
             gas (Gas): The breathing gas mixture.
         """
-        from .. import const
-
         # Calculate absolute pressures
         start_abs_p = start_depth / 10 + 1
         end_abs_p = end_depth / 10 + 1
@@ -133,13 +127,32 @@ class ZH_L16C_GF:  # source: ostc firmware code
         for tissue in self.compartments:
             tissue.load(p_n2=p_n2, p_he=p_he, t=t, rate=rate)
 
-    def calculate_ceilings(self, gf: GradientFactors) -> float:
+    def calculate_ceilings(self, gf) -> float:
         """
-        Calculate the ceiling for all tissues in the model using the given gradient factors.
+        Calculate the ceiling for all tissues in the model.
+
+        Takes the max ceiling across all 16 compartments (the most restrictive
+        tissue dictates the shallowest safe depth) and converts from bar to
+        meters of seawater.
+
         Args:
-            gf (GradientFactors): The gradient factors to use for the calculation.
+            gf: A float gradient factor (0-1) or a GradientFactors object.
         Returns:
-            float: The maximum ceiling pressure of all tissues in meters.
+            float: The maximum ceiling depth in meters (0 if no deco required).
         """
-        ceiling = max([tissue.compute_ceiling(gf) for tissue in self.compartments])
+        ceiling = max(tissue.compute_ceiling(gf) for tissue in self.compartments)
         return max((ceiling - 1) * 10, 0)  # convert bar to meters of sea water
+
+    def snapshot(self):
+        """Return tissue state as a flat list: [n2_0, he_0, n2_1, he_1, ...]"""
+        state = []
+        for t in self.compartments:
+            state.append(t.pp_nitrogen)
+            state.append(t.pp_helium)
+        return state
+
+    def restore(self, state):
+        """Restore tissue state from a flat list."""
+        for i, t in enumerate(self.compartments):
+            t.pp_nitrogen = state[i * 2]
+            t.pp_helium = state[i * 2 + 1]

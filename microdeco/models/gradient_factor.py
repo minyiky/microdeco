@@ -1,4 +1,5 @@
 class GradientFactors:
+    __slots__ = ('gf_low', 'gf_high', 'initial_depth')
 
     def __init__(self, gf_low: float = 0.3, gf_high: float = 0.85):
         if not (0 < gf_low <= gf_high <= 1):
@@ -11,6 +12,7 @@ class GradientFactors:
         self.initial_depth = initial_depth
 
     def get_current_gf(self, current_depth: float) -> float:
+        """Linearly interpolate between gf_low at initial_depth and gf_high at surface."""
         if current_depth > self.initial_depth:
             return self.gf_low
         ratio = (self.initial_depth - current_depth) / self.initial_depth

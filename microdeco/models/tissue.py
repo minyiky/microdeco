@@ -2,58 +2,6 @@ from .. import const
 from ..equations import load_tissue_constant, load_tissue, buhlmann
 from . import GradientFactors
 
-try:
-    from typing import TYPE_CHECKING
-    from typing import Protocol
-except ImportError:
-    pass
-
-if TYPE_CHECKING:
-
-    class PressureReader(Protocol):
-        def read(self) -> float: ...
-
-
-class TissueFactory:
-    """
-    TissueFactory is responsible for creating Tissue objects with specified gas coefficients and initial ambient pressure.
-
-    Attributes:
-        initial_pressure (float): The initial ambient pressure read from the provided PressureReader.
-
-    Methods:
-        __init__(pressure_reader: PressureReader):
-            Initializes the TissueFactory with the current ambient pressure from a PressureReader.
-
-        create_tissue(nitrogen: GasCoeffients, helium: GasCoeffients) -> Tissue:
-            Creates and returns a new Tissue object using the provided gas coefficients for nitrogen and helium, and the initial pressure.
-    """
-
-    def __init__(self, pressure_reader: "PressureReader"):
-        """
-        Initialize a new TissueFactory object.
-        Args:
-            pressure_reader: An object that reads the current pressure.
-        """
-        self.initial_pressure = pressure_reader.read()
-
-    def create_tissue(
-        self,
-        nitrogen: "GasCoeffients",
-        helium: "GasCoeffients",
-    ) -> "Tissue":
-        """
-        Create a new Tissue object.
-
-        Args:
-            nitrogen (GasCoeffients): The gas coefficients for Nitrogen.
-            helium (GasCoeffients): The gas coefficients for Helium.
-
-        Returns:
-            Tissue: A new Tissue object.
-        """
-        return Tissue(nitrogen, helium, self.initial_pressure)
-
 
 class Tissue(object):
     """
@@ -63,6 +11,7 @@ class Tissue(object):
         nitrogen (GasCoeffients): The gas coefficients for Nitrogen.
         helium (GasCoeffients): The gas coefficients for Helium.
     """
+    __slots__ = ('nitrogen_data', 'helium_data', 'pp_nitrogen', 'pp_helium')
 
     def __init__(
         self,
@@ -131,16 +80,22 @@ class Tissue(object):
                     R=rate,
                 )
 
-    def compute_ceiling(self, gf: GradientFactors) -> float:
+    def compute_ceiling(self, gf) -> float:
         """
-        Compute the ceiling pressure for the tissue using the given gradient factors.
+        Compute the ceiling pressure for the tissue.
+
+        Accepts either a float GF value directly (used during deco schedule
+        calculation with interpolated GFs) or a GradientFactors object (legacy,
+        uses gf_low).
+
         Args:
-            gf (GradientFactors): The gradient factors to use for the calculation.
+            gf: A float gradient factor (0-1) or a GradientFactors object.
         Returns:
-            float: The ceiling pressure for the tissue.
+            float: The ceiling pressure for the tissue in bar.
         """
+        gf_value = gf if isinstance(gf, float) else gf.gf_low
         return buhlmann(
-            gf=gf.gf_low,
+            gf=gf_value,
             p_n2=self.pp_nitrogen,
             p_he=self.pp_helium,
             A_n2=self.nitrogen_data.A,
@@ -148,7 +103,6 @@ class Tissue(object):
             B_n2=self.nitrogen_data.B,
             B_he=self.helium_data.B,
         )
-        pass
 
 
 class GasCoeffients:
@@ -161,6 +115,7 @@ class GasCoeffients:
         HALF_LIFE (float): The half-life of the tissue for Nitrogen.
         k (float): The gas decay constant for the tissue.
     """
+    __slots__ = ('A', 'B', 'HALF_LIFE', 'k')
 
     def __init__(self, A: float, B: float, HALF_LIFE: float):
         """
